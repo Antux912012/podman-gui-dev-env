@@ -1,0 +1,46 @@
+x-common-gui: &common-gui
+  userns_mode: "keep-id"
+  ipc: host
+  network_mode: host
+  stdin_open: true
+  tty: true
+  security_opt:
+    - label=disable
+    - seccomp=unconfined
+  devices:
+    - /dev/dri:/dev/dri
+    - /dev/fuse:/dev/fuse
+  environment:
+    - DISPLAY=${DISPLAY:-:0}
+    - WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+    - XDG_RUNTIME_DIR=/run/user/${USER_UID:-1000}
+  volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    - ${XDG_RUNTIME_DIR:-/run/user/1000}/${WAYLAND_DISPLAY:-wayland-0}:/run/user/${USER_UID:-1000}/${WAYLAND_DISPLAY:-wayland-0}:ro
+    - ${WORKSPACE_DIR:-.}:/workspace:Z
+  command: /bin/bash
+
+services:
+  dev-debian:
+    <<: *common-gui
+    image: localhost/dev-debian:latest
+    container_name: dev-debian-instance
+    hostname: dev-debian
+    build:
+      context: .
+      dockerfile: Containerfile.debian
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+
+  dev-fedora:
+    <<: *common-gui
+    image: localhost/dev-fedora:latest
+    container_name: dev-fedora-instance
+    hostname: dev-fedora
+    build:
+      context: .
+      dockerfile: Containerfile.fedora
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}

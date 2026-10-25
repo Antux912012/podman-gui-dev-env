@@ -1,0 +1,9 @@
+# Ignore local build artifacts or temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+.env
+build/
+.flatpak-builder/
+repo/
