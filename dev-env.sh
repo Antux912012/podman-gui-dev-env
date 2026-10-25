@@ -53,6 +53,11 @@ else
     PODMAN_GUI_FLAGS+=(-i)
 fi
 
+# Mount host Pictures directory read-only if present (for screenshots/assets)
+if [ -d "${HOME}/Pictures" ]; then
+    PODMAN_GUI_FLAGS+=(-v "${HOME}/Pictures:/host_pictures:ro")
+fi
+
 # Mount user runtime directory (Wayland, D-Bus session bus, Flatpak instance tracking, PipeWire)
 if [ -d "/run/user/$(id -u)" ]; then
     PODMAN_GUI_FLAGS+=(

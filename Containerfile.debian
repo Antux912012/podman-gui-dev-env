@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     build-essential git curl sudo gdb valgrind vim nano \
     libx11-6 libx11-dev libwayland-client0 libwayland-dev libxkbcommon-dev \
     mesa-utils libgl1-mesa-dri x11-apps wayland-utils \
-    flatpak flatpak-builder ostree elfutils appstream desktop-file-utils \
+    flatpak flatpak-builder ostree elfutils appstream appstream-compose desktop-file-utils \
     dbus-x11 fuse3 ca-certificates \
     && flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo \
     && rm -rf /var/lib/apt/lists/*
