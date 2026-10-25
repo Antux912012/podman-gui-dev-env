@@ -7,6 +7,7 @@ x-common-gui: &common-gui
   security_opt:
     - label=disable
     - seccomp=unconfined
+    - unmask=ALL
   devices:
     - /dev/dri:/dev/dri
     - /dev/fuse:/dev/fuse

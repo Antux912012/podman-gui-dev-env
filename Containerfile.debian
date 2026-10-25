@@ -26,5 +26,15 @@ RUN apt-get update && apt-get install -y \
     rustc cargo rustfmt rust-clippy rust-src clang libclang-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3-gi python3-gi-cairo python3-requests python3-pip \
+    gir1.2-gtk-4.0 gir1.2-adw-1 \
+    bc bison flex libssl-dev libelf-dev libncurses-dev libdw-dev \
+    libudev-dev libpci-dev libiberty-dev autoconf dwarves pahole \
+    zstd xz-utils lz4 cpio rsync kmod fakeroot dpkg-dev debhelper \
+    devscripts llvm lld sbsigntool mokutil openssl linux-base \
+    initramfs-tools pciutils usbutils \
+    && rm -rf /var/lib/apt/lists/*
+
 USER $USERNAME
 WORKDIR /workspace

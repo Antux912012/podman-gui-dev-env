@@ -6,4 +6,6 @@
 .env
 build/
 .flatpak-builder/
+.flatpak-data/
 repo/
+debian-cachy-kernel-updater/

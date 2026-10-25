@@ -21,23 +21,30 @@ if command -v xhost >/dev/null 2>&1; then
     xhost +local: >/dev/null 2>&1 || true
 fi
 
+mkdir -p "${SCRIPT_DIR}/.flatpak-data"
+
 PODMAN_GUI_FLAGS=(
     --rm
+    --replace
     --name "$CONTAINER_NAME"
     --hostname "dev-${DISTRO}"
     --userns=keep-id
     --group-add keep-groups
+    --pid=host
     --ipc=host
     --net=host
     --security-opt label=disable
     --security-opt seccomp=unconfined
+    --security-opt apparmor=unconfined
+    --security-opt unmask=ALL
     --device /dev/dri
     --device /dev/fuse
     -e DISPLAY="$DISPLAY"
     -e WAYLAND_DISPLAY="$WAYLAND_DISPLAY"
     -e XDG_RUNTIME_DIR="/run/user/$(id -u)"
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro
-    -v "$(pwd):/workspace:Z"
+    -v "${SCRIPT_DIR}:/workspace:Z"
+    -v "${SCRIPT_DIR}/.flatpak-data:/home/devuser/.local/share/flatpak:Z"
 )
 
 if [ -t 0 ]; then
@@ -46,9 +53,30 @@ else
     PODMAN_GUI_FLAGS+=(-i)
 fi
 
-# Mount Wayland socket if active on host
-if [ -n "$WAYLAND_DISPLAY" ] && [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
-    PODMAN_GUI_FLAGS+=(-v "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/run/user/$(id -u)/$WAYLAND_DISPLAY:ro")
+# Mount user runtime directory (Wayland, D-Bus session bus, Flatpak instance tracking, PipeWire)
+if [ -d "/run/user/$(id -u)" ]; then
+    PODMAN_GUI_FLAGS+=(
+        -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+        -v "/run/user/$(id -u):/run/user/$(id -u)"
+    )
+fi
+
+# Mount EFI variables read-only if present on host (for UEFI Secure Boot detection)
+if [ -d "/sys/firmware/efi/efivars" ]; then
+    PODMAN_GUI_FLAGS+=(
+        -v "/sys/firmware/efi/efivars:/sys/firmware/efi/efivars:ro"
+        -v "/sys/firmware/efi/efivars:/run/host/sys/firmware/efi/efivars:ro"
+    )
+fi
+
+# Mount host system Flatpak runtimes read-only if present
+if [ -d "/var/lib/flatpak" ]; then
+    PODMAN_GUI_FLAGS+=(-v "/var/lib/flatpak:/var/lib/flatpak:ro")
+fi
+
+# Mount system D-Bus socket if active on host
+if [ -S "/run/dbus/system_bus_socket" ]; then
+    PODMAN_GUI_FLAGS+=(-v "/run/dbus/system_bus_socket:/run/dbus/system_bus_socket")
 fi
 
 if [ "$ACTION" == "test-gui" ]; then
